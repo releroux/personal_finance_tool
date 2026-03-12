@@ -818,7 +818,7 @@ html, body, #root {
 */
 .pdf-print-root {
   position: fixed;
-  left: -200vw;
+  left: -9999px;
   top: 0;
   width: 960px;
   pointer-events: none;
