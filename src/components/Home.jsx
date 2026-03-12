@@ -1,6 +1,58 @@
+import { useState } from 'react'
+
+function GuideModal({ onClose, onConfirm }) {
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2 className="modal-title">How to use this tool</h2>
+          <button className="modal-close" onClick={onClose} aria-label="Close">✕</button>
+        </div>
+        <div className="modal-body">
+          <div className="guide-section">
+            <h3>Editing values</h3>
+            <p>Click any amount to edit it inline. Press <kbd>Enter</kbd> to save or <kbd>Esc</kbd> to cancel. All values update instantly across every tab.</p>
+          </div>
+          <div className="guide-section">
+            <h3>Adding &amp; removing items</h3>
+            <p>Use the <strong>+ Add item</strong> button below any category to add a custom line item. Hover over an existing item and click the <strong>×</strong> that appears to delete it.</p>
+          </div>
+          <div className="guide-section">
+            <h3>The three tabs</h3>
+            <ul className="guide-list">
+              <li><strong>Income Statement</strong> — Enter your monthly income, taxes, and expenses. Your cash flow surplus or deficit is calculated automatically.</li>
+              <li><strong>Balance Sheet</strong> — Record everything you own (assets) and everything you owe (liabilities). Net worth is calculated as Assets − Liabilities.</li>
+              <li><strong>Dashboard</strong> — Financial health KPIs and charts derived from your IS and BS data — savings rate, debt ratios, liquidity, and more.</li>
+            </ul>
+          </div>
+          <div className="guide-section">
+            <h3>A few things to know</h3>
+            <ul className="guide-list">
+              <li>All data lives in memory — <strong>refreshing the page resets everything</strong> to the default values.</li>
+              <li>All amounts are in <strong>South African Rand (ZAR)</strong>.</li>
+              <li>This tool does not store or transmit any of your data.</li>
+            </ul>
+          </div>
+        </div>
+        <div className="modal-footer">
+          <button className="modal-btn-primary" onClick={onConfirm}>Let's go →</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function Home({ onGetStarted }) {
+  const [showGuide, setShowGuide] = useState(false)
+
   return (
     <div className="home-page">
+      {showGuide && (
+        <GuideModal
+          onClose={() => setShowGuide(false)}
+          onConfirm={() => { setShowGuide(false); onGetStarted() }}
+        />
+      )}
       <div className="home-hero">
         <div className="home-logo">📊</div>
         <h2 className="home-title">Personal Finance Dashboard</h2>
@@ -56,7 +108,7 @@ export default function Home({ onGetStarted }) {
           </div>
         </div> */}
 
-        <button className="home-cta" onClick={onGetStarted}>
+        <button className="home-cta" onClick={() => setShowGuide(true)}>
           Get Started →
         </button>
       </div>
