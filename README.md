@@ -1,6 +1,8 @@
 # Personal Finance Dashboard
 
-A local-first personal finance dashboard built with React and Vite. Track your income statement, balance sheet, and key financial KPIs — all in-browser with no backend or account required.
+A personal finance dashboard built with React and Vite. Track your income statement, balance sheet, and key financial KPIs — all in-browser with no backend or account required.
+
+**Live site:** [https://releroux.github.io/personal_finance_tool/](https://releroux.github.io/personal_finance_tool/)
 
 ## Features
 
@@ -21,6 +23,10 @@ A local-first personal finance dashboard built with React and Vite. Track your i
 
 ## Getting Started
 
+Visit the live site at [https://releroux.github.io/personal_finance_tool/](https://releroux.github.io/personal_finance_tool/).
+
+To run locally:
+
 ```bash
 cd personal_finance_tool
 npm install
@@ -29,13 +35,21 @@ npm run dev
 
 Open [http://localhost:5173](http://localhost:5173) in your browser.
 
+## Deploying
+
+```bash
+npm run deploy
+```
+
+This builds the app and pushes it to the `gh-pages` branch, updating the live site.
+
 ## Usage
 
 1. **Income Statement tab** — Update your salary, PAYE, UIF, and monthly expenses. Click any amount to edit it inline. Use "+ Add item" to add custom line items to any category.
 2. **Balance Sheet tab** — Enter your assets (cash, savings, investments, property, vehicle) and liabilities (credit cards, loans, mortgage).
 3. **KPI Cards tab** — Review auto-calculated financial health metrics based on your IS and BS data.
 
-> All data lives in React state. Refresh the page to reset to defaults. 
+> All data lives in React state — nothing is sent to a server. Refresh the page to reset to defaults.
 
 ## Project Structure
 
