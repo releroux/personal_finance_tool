@@ -50,4 +50,4 @@ All styles are in `src/App.css` using CSS custom properties (design tokens) defi
 
 ### Deployment
 
-`npm run deploy` runs `gh-pages -d dist`, pushing the built output to the `gh-pages` branch of the GitHub repo. The live site is at `https://releroux.github.io/personal_finance_tool/`. Vite is configured with `base: '/personal_finance_tool/'` for correct asset paths on GitHub Pages.
+`npm run deploy` runs `gh-pages -d dist`, pushing the built output to the `gh-pages` branch of the GitHub repo. The live site is at `https://releroux.github.io/personal_finance_tool/`. Vite is configured with `base: '/personal_finance_tool/'` for correct asset paths on GitHub Pages. 
