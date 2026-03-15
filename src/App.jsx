@@ -1,4 +1,27 @@
 import { useState } from 'react'
+
+function ResetConfirmModal({ onConfirm, onCancel }) {
+  return (
+    <div className="modal-overlay" onClick={onCancel}>
+      <div className="modal reset-modal" onClick={e => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2 className="modal-title">Reset all data?</h2>
+          <button className="modal-close" onClick={onCancel} aria-label="Close">✕</button>
+        </div>
+        <div className="modal-body">
+          <p className="reset-modal-body">
+            All values will return to their defaults. <strong>This cannot be undone.</strong>
+          </p>
+        </div>
+        <div className="modal-footer">
+          <button className="modal-btn-secondary" onClick={onCancel}>Cancel</button>
+          <button className="modal-btn-danger" onClick={onConfirm}>Reset</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 import IncomeStatement from './components/IncomeStatement'
 import BalanceSheet from './components/BalanceSheet'
 import Dashboard from './components/Dashboard'
@@ -22,6 +45,7 @@ export default function App() {
   const [dark, setDark] = useState(false)
   const [slideDir, setSlideDir] = useState('right')
   const [animKeys, setAnimKeys] = useState({ home: 0, income: 0, balance: 0, dashboard: 0 })
+  const [showReset, setShowReset] = useState(false)
 
   const handleTabChange = (tabId) => {
     const dir = TAB_ORDER[tabId] > TAB_ORDER[activeTab] ? 'right' : 'left'
@@ -30,15 +54,15 @@ export default function App() {
     setActiveTab(tabId)
   }
 
-  const resetData = () => {
-    if (window.confirm('Reset all data to defaults? This cannot be undone.')) {
-      setIsState(IS_DEFAULTS)
-      setBsState(BS_DEFAULTS)
-    }
+  const confirmReset = () => {
+    setIsState(IS_DEFAULTS)
+    setBsState(BS_DEFAULTS)
+    setShowReset(false)
   }
 
   return (
     <div className={`app${dark ? ' dark' : ''}`}>
+      {showReset && <ResetConfirmModal onConfirm={confirmReset} onCancel={() => setShowReset(false)} />}
       <header className="app-header">
         <div className="app-header-left">
           <span className="app-logo">📊</span>
@@ -85,7 +109,7 @@ export default function App() {
               </div>
               <div className="tabs-right">
                 <PDFExport isState={isState} bsState={bsState} />
-                <button className="reset-btn" onClick={resetData} title="Reset all data">
+                <button className="reset-btn" onClick={() => setShowReset(true)} title="Reset all data">
                   Reset
                 </button>
               </div>

@@ -38,6 +38,37 @@ function AmountCell({ value, onChange }) {
   )
 }
 
+function EditableLabel({ value, onChange }) {
+  const [editing, setEditing] = useState(false)
+  const [draft,   setDraft]   = useState('')
+
+  const commit = () => {
+    if (draft.trim()) onChange(draft.trim())
+    setEditing(false)
+  }
+
+  if (editing) return (
+    <input
+      autoFocus
+      className="is-label-input"
+      value={draft}
+      onChange={e => setDraft(e.target.value)}
+      onBlur={commit}
+      onKeyDown={e => { if (e.key === 'Enter') commit(); if (e.key === 'Escape') setEditing(false) }}
+    />
+  )
+
+  return (
+    <span
+      className="is-editable-label"
+      title="Click to rename"
+      onClick={() => { setDraft(value); setEditing(true) }}
+    >
+      {value}
+    </span>
+  )
+}
+
 const SEC_INCOME = '__income__'
 const SEC_DED    = '__deductions__'
 
@@ -95,6 +126,15 @@ export default function IncomeStatement({ isState, setIsState }) {
     categories,
   } = isState
 
+  const labels = {
+    salary: 'Gross Salary',
+    paye:   'Tax Payable (PAYE)',
+    uif:    'UIF',
+    ra:     'Retirement Annuity (RA)',
+    ma:     'Medical Aid',
+    ...(isState.labels || {}),
+  }
+
   const [addingTo, setAddingTo] = useState(null)
   const [newItem,  setNewItem]  = useState({ label: '', actual: '' })
 
@@ -114,6 +154,31 @@ export default function IncomeStatement({ isState, setIsState }) {
 
   // ── State writers ──────────────────────────────────────────────────────────
   const patch = obj => setIsState(prev => ({ ...prev, ...obj }))
+
+  const patchLabel = (key, val) => patch({ labels: { ...labels, [key]: val } })
+
+  const updateIncomeItemLabel = (id, label) =>
+    setIsState(prev => ({
+      ...prev,
+      additionalIncome: (prev.additionalIncome || []).map(i => i.id !== id ? i : { ...i, label }),
+    }))
+
+  const updateDeductionItemLabel = (id, label) =>
+    setIsState(prev => ({
+      ...prev,
+      additionalDeductions: (prev.additionalDeductions || []).map(i => i.id !== id ? i : { ...i, label }),
+    }))
+
+  const updateExpenseItemLabel = (catId, itemId, label) =>
+    setIsState(prev => ({
+      ...prev,
+      categories: prev.categories.map(cat =>
+        cat.id !== catId ? cat : {
+          ...cat,
+          items: cat.items.map(item => item.id !== itemId ? item : { ...item, label }),
+        }
+      ),
+    }))
 
   const updateIncomeItem = (id, value) =>
     setIsState(prev => ({
@@ -210,7 +275,7 @@ export default function IncomeStatement({ isState, setIsState }) {
         <tbody>
           <tr className="is-section-header"><td colSpan={2}><Tooltip label="INCOME" text={HINTS.income} /></td></tr>
           <tr className="is-item">
-            <td className="is-label-indent">Gross Salary</td>
+            <td className="is-label-indent"><EditableLabel value={labels.salary} onChange={v => patchLabel('salary', v)} /></td>
             <AmountCell value={salary} onChange={v => patch({ salary: v })} />
           </tr>
 
@@ -218,7 +283,7 @@ export default function IncomeStatement({ isState, setIsState }) {
             <tr key={item.id} className="is-item is-item-del">
               <td className="is-label-indent">
                 <div className="is-label-wrap">
-                  <span>{item.label}</span>
+                  <EditableLabel value={item.label} onChange={v => updateIncomeItemLabel(item.id, v)} />
                   <button className="is-del-btn" onClick={() => deleteIncomeItem(item.id)} title="Remove">×</button>
                 </div>
               </td>
@@ -239,19 +304,19 @@ export default function IncomeStatement({ isState, setIsState }) {
           <tr className="is-spacer"><td colSpan={2} /></tr>
           <tr className="is-subsection"><td colSpan={2}><Tooltip label="Deductions" text={HINTS.deductions} /></td></tr>
           <tr className="is-item">
-            <td className="is-label-indent">Tax Payable (PAYE)</td>
+            <td className="is-label-indent"><EditableLabel value={labels.paye} onChange={v => patchLabel('paye', v)} /></td>
             <AmountCell value={paye} onChange={v => patch({ paye: v })} />
           </tr>
           <tr className="is-item">
-            <td className="is-label-indent">UIF</td>
+            <td className="is-label-indent"><EditableLabel value={labels.uif} onChange={v => patchLabel('uif', v)} /></td>
             <AmountCell value={uif} onChange={v => patch({ uif: v })} />
           </tr>
           <tr className="is-item">
-            <td className="is-label-indent">Retirement Annuity (RA)</td>
+            <td className="is-label-indent"><EditableLabel value={labels.ra} onChange={v => patchLabel('ra', v)} /></td>
             <AmountCell value={ra} onChange={v => patch({ ra: v })} />
           </tr>
           <tr className="is-item">
-            <td className="is-label-indent">Medical Aid</td>
+            <td className="is-label-indent"><EditableLabel value={labels.ma} onChange={v => patchLabel('ma', v)} /></td>
             <AmountCell value={ma} onChange={v => patch({ ma: v })} />
           </tr>
 
@@ -259,7 +324,7 @@ export default function IncomeStatement({ isState, setIsState }) {
             <tr key={item.id} className="is-item is-item-del">
               <td className="is-label-indent">
                 <div className="is-label-wrap">
-                  <span>{item.label}</span>
+                  <EditableLabel value={item.label} onChange={v => updateDeductionItemLabel(item.id, v)} />
                   <button className="is-del-btn" onClick={() => deleteDeductionItem(item.id)} title="Remove">×</button>
                 </div>
               </td>
@@ -298,7 +363,7 @@ export default function IncomeStatement({ isState, setIsState }) {
                 <tr key={item.id} className="is-item is-item-del">
                   <td className="is-label-indent">
                     <div className="is-label-wrap">
-                      <span>{item.label}</span>
+                      <EditableLabel value={item.label} onChange={v => updateExpenseItemLabel(cat.id, item.id, v)} />
                       <button
                         className="is-del-btn"
                         onClick={() => deleteExpenseItem(cat.id, item.id)}

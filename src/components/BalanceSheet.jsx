@@ -18,7 +18,38 @@ const catHint = (arrayKey, catId) => {
   return catId === 'current' ? HINTS.liabCurrent : HINTS.liabLongTerm
 }
 
-function CategoryRows({ arrayKey, categories, totals, addingTo, newItem, setNewItem, commitAdd, startAdd, setAddingTo, updateItem, deleteItem }) {
+function EditableLabel({ value, onChange }) {
+  const [editing, setEditing] = useState(false)
+  const [draft,   setDraft]   = useState('')
+
+  const commit = () => {
+    if (draft.trim()) onChange(draft.trim())
+    setEditing(false)
+  }
+
+  if (editing) return (
+    <input
+      autoFocus
+      className="is-label-input"
+      value={draft}
+      onChange={e => setDraft(e.target.value)}
+      onBlur={commit}
+      onKeyDown={e => { if (e.key === 'Enter') commit(); if (e.key === 'Escape') setEditing(false) }}
+    />
+  )
+
+  return (
+    <span
+      className="is-editable-label"
+      title="Click to rename"
+      onClick={() => { setDraft(value); setEditing(true) }}
+    >
+      {value}
+    </span>
+  )
+}
+
+function CategoryRows({ arrayKey, categories, totals, addingTo, newItem, setNewItem, commitAdd, startAdd, setAddingTo, updateItem, updateItemLabel, deleteItem }) {
   const isAdding = (ak, catId) => addingTo?.arrayKey === ak && addingTo?.catId === catId
 
   return categories.map((cat, ci) => (
@@ -31,7 +62,7 @@ function CategoryRows({ arrayKey, categories, totals, addingTo, newItem, setNewI
         <tr key={item.id} className="is-item is-item-del">
           <td className="is-label-indent">
             <div className="is-label-wrap">
-              <span>{item.label}</span>
+              <EditableLabel value={item.label} onChange={v => updateItemLabel(arrayKey, cat.id, item.id, v)} />
               <button
                 className="is-del-btn"
                 onClick={() => deleteItem(arrayKey, cat.id, item.id)}
@@ -155,6 +186,17 @@ export default function BalanceSheet({ bsState, setBsState }) {
       ),
     }))
 
+  const updateItemLabel = (arrayKey, catId, itemId, label) =>
+    setBsState(prev => ({
+      ...prev,
+      [arrayKey]: prev[arrayKey].map(cat =>
+        cat.id !== catId ? cat : {
+          ...cat,
+          items: cat.items.map(item => item.id !== itemId ? item : { ...item, label }),
+        }
+      ),
+    }))
+
   const startAdd = (arrayKey, catId) => {
     setAddingTo({ arrayKey, catId })
     setNewItem({ label: '', value: '' })
@@ -179,7 +221,7 @@ export default function BalanceSheet({ bsState, setBsState }) {
     setAddingTo(null)
   }
 
-  const catRowProps = { addingTo, newItem, setNewItem, commitAdd, startAdd, setAddingTo, updateItem, deleteItem }
+  const catRowProps = { addingTo, newItem, setNewItem, commitAdd, startAdd, setAddingTo, updateItem, updateItemLabel, deleteItem }
 
   const today = new Date().toLocaleDateString('en-ZA', {
     year: 'numeric', month: 'long', day: 'numeric',

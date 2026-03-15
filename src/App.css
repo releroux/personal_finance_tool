@@ -732,6 +732,21 @@ html, body, #root {
 .is-editable { cursor: pointer; }
 .is-editable:hover { background: rgba(37,99,235,0.05); color: var(--primary); }
 
+.is-editable-label { cursor: pointer; border-radius: 3px; }
+.is-editable-label:hover { color: var(--primary); }
+
+.is-label-input {
+  width: 100%;
+  border: none;
+  border-bottom: 2px solid var(--primary);
+  background: transparent;
+  font-size: inherit;
+  font-family: inherit;
+  color: var(--text);
+  outline: none;
+  padding: 0 2px;
+}
+
 .is-cell-input {
   width: 100%;
   background: white;
@@ -1505,6 +1520,41 @@ html, body, #root {
   transition: opacity 0.15s;
 }
 .modal-btn-primary:hover { opacity: 0.88; }
+
+.modal-btn-secondary {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+.modal-btn-secondary:hover { background: var(--border); }
+
+.modal-btn-danger {
+  background: var(--negative);
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.15s;
+}
+.modal-btn-danger:hover { opacity: 0.88; }
+
+.reset-modal { max-width: 420px; }
+.reset-modal-body {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
+}
 
 /* ─── Responsive ────────────────────────────────────────────────────────── */
 

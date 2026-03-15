@@ -8,6 +8,13 @@ export const IS_DEFAULTS = {
   paye:   1600,
   uif:    177,
   ra:     200,
+  labels: {
+    salary: 'Gross Salary',
+    paye:   'Tax Payable (PAYE)',
+    uif:    'UIF',
+    ra:     'Retirement Annuity (RA)',
+    ma:     'Medical Aid',
+  },
   additionalIncome:     [],
   additionalDeductions: [],
   categories: [
