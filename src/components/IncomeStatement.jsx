@@ -38,9 +38,43 @@ function AmountCell({ value, onChange }) {
   )
 }
 
-// Section keys that are not expense-category IDs
 const SEC_INCOME = '__income__'
 const SEC_DED    = '__deductions__'
+
+function AddRow({ section, placeholder, addingTo, newItem, setNewItem, commitAdd, startAdd, setAddingTo }) {
+  return addingTo === section ? (
+    <tr className="is-add-row">
+      <td className="is-label-indent">
+        <input
+          autoFocus
+          className="is-add-input"
+          placeholder={placeholder}
+          value={newItem.label}
+          onChange={e => setNewItem(p => ({ ...p, label: e.target.value }))}
+          onKeyDown={e => { if (e.key === 'Enter') commitAdd(section); if (e.key === 'Escape') setAddingTo(null) }}
+        />
+      </td>
+      <td className="is-add-actions">
+        <input
+          className="is-add-input is-add-num"
+          type="number"
+          placeholder="Amount"
+          value={newItem.actual}
+          onChange={e => setNewItem(p => ({ ...p, actual: e.target.value }))}
+          onKeyDown={e => { if (e.key === 'Enter') commitAdd(section); if (e.key === 'Escape') setAddingTo(null) }}
+        />
+        <button className="is-btn-confirm" onClick={() => commitAdd(section)}>Add</button>
+        <button className="is-btn-cancel"  onClick={() => setAddingTo(null)}>✕</button>
+      </td>
+    </tr>
+  ) : (
+    <tr className="is-add-trigger">
+      <td colSpan={2}>
+        <button className="is-add-btn" onClick={() => startAdd(section)}>+ Add item</button>
+      </td>
+    </tr>
+  )
+}
 
 const HINTS = {
   income:     'All money flowing into your household each month — primary salary, freelance earnings, rental income, dividends, or any other income source.',
@@ -129,6 +163,8 @@ export default function IncomeStatement({ isState, setIsState }) {
     setNewItem({ label: '', actual: '' })
   }
 
+  const addRowProps = { addingTo, newItem, setNewItem, startAdd, setAddingTo }
+
   const commitAdd = section => {
     if (!newItem.label.trim()) return
     const entry = { id: `${section}-${Date.now()}`, label: newItem.label.trim(), actual: parseFloat(newItem.actual) || 0 }
@@ -147,41 +183,6 @@ export default function IncomeStatement({ isState, setIsState }) {
     }
     setAddingTo(null)
   }
-
-  // ── Inline add form (shared) ───────────────────────────────────────────────
-  const AddRow = ({ section, placeholder }) =>
-    addingTo === section ? (
-      <tr className="is-add-row">
-        <td className="is-label-indent">
-          <input
-            autoFocus
-            className="is-add-input"
-            placeholder={placeholder}
-            value={newItem.label}
-            onChange={e => setNewItem(p => ({ ...p, label: e.target.value }))}
-            onKeyDown={e => { if (e.key === 'Enter') commitAdd(section); if (e.key === 'Escape') setAddingTo(null) }}
-          />
-        </td>
-        <td className="is-add-actions">
-          <input
-            className="is-add-input is-add-num"
-            type="number"
-            placeholder="Amount"
-            value={newItem.actual}
-            onChange={e => setNewItem(p => ({ ...p, actual: e.target.value }))}
-            onKeyDown={e => { if (e.key === 'Enter') commitAdd(section); if (e.key === 'Escape') setAddingTo(null) }}
-          />
-          <button className="is-btn-confirm" onClick={() => commitAdd(section)}>Add</button>
-          <button className="is-btn-cancel"  onClick={() => setAddingTo(null)}>✕</button>
-        </td>
-      </tr>
-    ) : (
-      <tr className="is-add-trigger">
-        <td colSpan={2}>
-          <button className="is-add-btn" onClick={() => startAdd(section)}>+ Add item</button>
-        </td>
-      </tr>
-    )
 
   return (
     <div className="statement">
@@ -225,7 +226,7 @@ export default function IncomeStatement({ isState, setIsState }) {
             </tr>
           ))}
 
-          <AddRow section={SEC_INCOME} placeholder="Income source (e.g. Bonus, Rental)" />
+          <AddRow section={SEC_INCOME} placeholder="Income source (e.g. Bonus, Rental)" commitAdd={commitAdd} {...addRowProps} />
 
           {totalAddIncome > 0 && (
             <tr className="is-subtotal">
@@ -266,7 +267,7 @@ export default function IncomeStatement({ isState, setIsState }) {
             </tr>
           ))}
 
-          <AddRow section={SEC_DED} placeholder="Deduction (e.g. Pension, SDL)" />
+          <AddRow section={SEC_DED} placeholder="Deduction (e.g. Pension, SDL)" commitAdd={commitAdd} {...addRowProps} />
 
           <tr className="is-subtotal">
             <td>Total ductions</td>
@@ -309,7 +310,7 @@ export default function IncomeStatement({ isState, setIsState }) {
                 </tr>
               ))}
 
-              <AddRow section={cat.id} placeholder="Expense name" />
+              <AddRow section={cat.id} placeholder="Expense name" commitAdd={commitAdd} {...addRowProps} />
 
               <tr className="is-subtotal">
                 <td>Subtotal: {cat.label}</td>

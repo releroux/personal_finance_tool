@@ -13,6 +13,81 @@ const HINTS = {
 const num = v => parseFloat(v) || 0
 const fmtR = v => 'R\u00a0' + Math.round(num(v)).toLocaleString('en-US')
 
+const catHint = (arrayKey, catId) => {
+  if (arrayKey === 'assetCategories') return catId === 'current' ? HINTS.assetCurrent : HINTS.assetFixed
+  return catId === 'current' ? HINTS.liabCurrent : HINTS.liabLongTerm
+}
+
+function CategoryRows({ arrayKey, categories, totals, addingTo, newItem, setNewItem, commitAdd, startAdd, setAddingTo, updateItem, deleteItem }) {
+  const isAdding = (ak, catId) => addingTo?.arrayKey === ak && addingTo?.catId === catId
+
+  return categories.map((cat, ci) => (
+    <Fragment key={cat.id}>
+      <tr className="is-cat-header">
+        <td colSpan={2}><Tooltip label={cat.label} text={catHint(arrayKey, cat.id)} /></td>
+      </tr>
+
+      {cat.items.map(item => (
+        <tr key={item.id} className="is-item is-item-del">
+          <td className="is-label-indent">
+            <div className="is-label-wrap">
+              <span>{item.label}</span>
+              <button
+                className="is-del-btn"
+                onClick={() => deleteItem(arrayKey, cat.id, item.id)}
+                title="Remove item"
+              >×</button>
+            </div>
+          </td>
+          <AmountCell
+            value={item.value}
+            onChange={v => updateItem(arrayKey, cat.id, item.id, v)}
+          />
+        </tr>
+      ))}
+
+      {isAdding(arrayKey, cat.id) ? (
+        <tr className="is-add-row">
+          <td className="is-label-indent">
+            <input
+              autoFocus
+              className="is-add-input"
+              placeholder="Line item name"
+              value={newItem.label}
+              onChange={e => setNewItem(p => ({ ...p, label: e.target.value }))}
+              onKeyDown={e => { if (e.key === 'Enter') commitAdd(); if (e.key === 'Escape') setAddingTo(null) }}
+            />
+          </td>
+          <td className="is-add-actions">
+            <input
+              className="is-add-input is-add-num"
+              type="number"
+              placeholder="Amount"
+              value={newItem.value}
+              onChange={e => setNewItem(p => ({ ...p, value: e.target.value }))}
+              onKeyDown={e => { if (e.key === 'Enter') commitAdd(); if (e.key === 'Escape') setAddingTo(null) }}
+            />
+            <button className="is-btn-confirm" onClick={commitAdd}>Add</button>
+            <button className="is-btn-cancel"  onClick={() => setAddingTo(null)}>✕</button>
+          </td>
+        </tr>
+      ) : (
+        <tr className="is-add-trigger">
+          <td colSpan={2}>
+            <button className="is-add-btn" onClick={() => startAdd(arrayKey, cat.id)}>+ Add item</button>
+          </td>
+        </tr>
+      )}
+
+      <tr className="is-subtotal">
+        <td>Total {cat.label}</td>
+        <td className="is-amount">{fmtR(totals[ci])}</td>
+      </tr>
+      <tr className="is-spacer"><td colSpan={2} /></tr>
+    </Fragment>
+  ))
+}
+
 function AmountCell({ value, onChange }) {
   const [editing, setEditing] = useState(false)
   const [draft,   setDraft]   = useState('')
@@ -50,7 +125,7 @@ function AmountCell({ value, onChange }) {
 export default function BalanceSheet({ bsState, setBsState }) {
   const { assetCategories, liabilityCategories } = bsState
 
-  const [addingTo, setAddingTo] = useState(null) // { arrayKey, catId }
+  const [addingTo, setAddingTo] = useState(null)
   const [newItem,  setNewItem]  = useState({ label: '', value: '' })
 
   // ── Derived ────────────────────────────────────────────────────────────────
@@ -104,80 +179,7 @@ export default function BalanceSheet({ bsState, setBsState }) {
     setAddingTo(null)
   }
 
-  const isAdding = (arrayKey, catId) =>
-    addingTo?.arrayKey === arrayKey && addingTo?.catId === catId
-
-  const catHint = (arrayKey, catId) => {
-    if (arrayKey === 'assetCategories') return catId === 'current' ? HINTS.assetCurrent : HINTS.assetFixed
-    return catId === 'current' ? HINTS.liabCurrent : HINTS.liabLongTerm
-  }
-
-  const CategoryRows = ({ arrayKey, categories, totals }) =>
-    categories.map((cat, ci) => (
-      <Fragment key={cat.id}>
-        <tr className="is-cat-header">
-          <td colSpan={2}><Tooltip label={cat.label} text={catHint(arrayKey, cat.id)} /></td>
-        </tr>
-
-        {cat.items.map(item => (
-          <tr key={item.id} className="is-item is-item-del">
-            <td className="is-label-indent">
-              <div className="is-label-wrap">
-                <span>{item.label}</span>
-                <button
-                  className="is-del-btn"
-                  onClick={() => deleteItem(arrayKey, cat.id, item.id)}
-                  title="Remove item"
-                >×</button>
-              </div>
-            </td>
-            <AmountCell
-              value={item.value}
-              onChange={v => updateItem(arrayKey, cat.id, item.id, v)}
-            />
-          </tr>
-        ))}
-
-        {isAdding(arrayKey, cat.id) ? (
-          <tr className="is-add-row">
-            <td className="is-label-indent">
-              <input
-                autoFocus
-                className="is-add-input"
-                placeholder="Line item name"
-                value={newItem.label}
-                onChange={e => setNewItem(p => ({ ...p, label: e.target.value }))}
-                onKeyDown={e => { if (e.key === 'Enter') commitAdd(); if (e.key === 'Escape') setAddingTo(null) }}
-              />
-            </td>
-            <td className="is-add-actions">
-              <input
-                className="is-add-input is-add-num"
-                type="number"
-                placeholder="Amount"
-                value={newItem.value}
-                onChange={e => setNewItem(p => ({ ...p, value: e.target.value }))}
-                onKeyDown={e => { if (e.key === 'Enter') commitAdd(); if (e.key === 'Escape') setAddingTo(null) }}
-              />
-              <button className="is-btn-confirm" onClick={commitAdd}>Add</button>
-              <button className="is-btn-cancel"  onClick={() => setAddingTo(null)}>✕</button>
-            </td>
-          </tr>
-        ) : (
-          <tr className="is-add-trigger">
-            <td colSpan={2}>
-              <button className="is-add-btn" onClick={() => startAdd(arrayKey, cat.id)}>+ Add item</button>
-            </td>
-          </tr>
-        )}
-
-        <tr className="is-subtotal">
-          <td>Total {cat.label}</td>
-          <td className="is-amount">{fmtR(totals[ci])}</td>
-        </tr>
-        <tr className="is-spacer"><td colSpan={2} /></tr>
-      </Fragment>
-    ))
+  const catRowProps = { addingTo, newItem, setNewItem, commitAdd, startAdd, setAddingTo, updateItem, deleteItem }
 
   const today = new Date().toLocaleDateString('en-ZA', {
     year: 'numeric', month: 'long', day: 'numeric',
@@ -214,6 +216,7 @@ export default function BalanceSheet({ bsState, setBsState }) {
             arrayKey="assetCategories"
             categories={assetCategories}
             totals={assetTotals}
+            {...catRowProps}
           />
           <tr className="is-total">
             <td>TOTAL ASSETS</td>
@@ -229,6 +232,7 @@ export default function BalanceSheet({ bsState, setBsState }) {
             arrayKey="liabilityCategories"
             categories={liabilityCategories}
             totals={liabTotals}
+            {...catRowProps}
           />
           <tr className="is-total">
             <td>TOTAL LIABILITIES</td>

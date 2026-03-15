@@ -19,7 +19,7 @@ export default function App() {
   const [isState, setIsState] = useState(IS_DEFAULTS)
   const [bsState, setBsState] = useState(BS_DEFAULTS)
   const [activeTab, setActiveTab] = useState('home')
-  const [dark, setDark] = useState(true)
+  const [dark, setDark] = useState(false)
   const [slideDir, setSlideDir] = useState('right')
   const [animKeys, setAnimKeys] = useState({ home: 0, income: 0, balance: 0, dashboard: 0 })
 
